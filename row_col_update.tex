@@ -1,0 +1,132 @@
+\section{A row-column gradient step}
+Our objective is to use a gradient descent optimization in a coordinate decent (CD) manner, where each row $i$ and column $i$ (row-column $i$ combination) of the gradient matrix represent a coordinate and that the metric matrix will keep being positive definite (PD) during this update (given that the initial matrix is PD). First, let's define the update:
+\begin{equation}
+   \newW = \W +\eta\cdot\mat{G}
+   \label{updateEq}
+\end{equation}
+Where $\mat{G}$ is the update matrix based on a single coordinate, $\eta$ is the step size, $\W$ is the pre-update metric matrix, $\newW$ is the post-update metric matrix.
+
+We will show next how to choose  $\eta$ and generate $\mat{G}$ row-column $i$ combination such that the CD update shall keep the metric matrix as PD. 
+
+
+\subsection{The positive definite update of a row-column $i$ combination }
+Since PD matrices are symmetric, we require the update $\mat{G}$ of \eqref{updateEq} to be symmetric:
+\begin{equation}
+\mat{G} = \vec{u}\cdot\vec{e_i}\T + \vec{e_i}\cdot\vec{u}\T
+\label{gradMtx}
+\end{equation}
+where  $\vec{u}$ is a column vector that equals the mean between the row and columns $i$ of the gradient matrix of the total loss, $vec{e_i}$ equals an elementary vector for selecting a column $i$ of a matrix. 
+
+\todo{what about $u_1$ ?? is it the mean or $0.5*mean_1$ ?? }
+
+\subsubsection{choosing the step size $\eta$}
+Without loss of generality we discuss how to choose the maximal step size of the $i=1$ coordinate, such that the update maintains $\newW$ as a PD matrix. We will investigate the condition on $\eta$ according to the Schur complement \todo{addref} such that the update \eqref{updateEq} is PD.
+The pre-update matrix $\W$ can be formulated according to the Schur complement notation as: 
+\begin{equation}
+\W= \left[ \begin{matrix} C & \vec{B} \\ \vec{B\T} & \mat{A} \end{matrix} \right]
+\label{schurNotationPreUpdate}
+\end{equation}
+where $C = \W_{(1,1)}$ (scalar), $\vec{B} = \W_{(1,2:)}$, $\mat{A} = \W_{(2:,2:)}$
+
+Next, we use the notation
+\begin{equation}
+\mat{W^*}= \left[ \begin{matrix} C^* & \vec{B^*} \\ \vec{B^*\T} & \mat{A^*} \end{matrix} \right]
+\end{equation}
+We note that $\mat{W^*}$ is PD iff $A^*$ and $C^* - B^* A^{*-1} B^*\T$ are both positive definite:
+\begin{equation}
+\mat{W^*} \succ  0 \Leftrightarrow A^* \succ  0, C^* - B^* A^{*-1} B^*\T \succ  0
+\label{schurCondPreliminary}
+\end{equation}
+We note that $\mat{A^*} = \mat{A}$ because we only update the row-column $i=1$ and $\mat{A}$ is a minor of $\W \succ  0$ therefor $\mat{A^*}$ is PD. Moreover, $C^* - B^* A^{*-1} B^*\T$ reduces to a scalar, hence \eqref{schurCondPreliminary} reduces to:
+\begin{equation}
+\mat{W^*} \succ  0 \Leftrightarrow C^* - B^* A^{-1} B^*\T >  0
+\label{schurCond}
+\end{equation}
+Next, we expand \eqref{schurCond} according to \eqref{updateEq} and \eqref{gradMtx} (with $i=1$) yielding the condition for $\newW \succ  0$
+\begin{equation}
+(\W_{(1,1)} + 2\eta \vec{u}_{(1)}) - (\W_{(2:,1)} + \eta \vec{u}_{(2:)})\T \mat{A}^{-1} (\W_{(2:,1)} + \eta \vec{u}_{(2:)}) >  0
+\label{PDUpdateCondNonSimpl}
+\end{equation}
+Grouping \eqref{PDUpdateCondNonSimpl} as a quadratic inequality, we get:
+\begin{equation}
+-(\vec{u}_{(2:)}\T \mat{A}^{-1} \vec{u}_{(2:)})\eta^2+ 2(\vec{u}_{(1)} - \vec{u}_{(2:)}\T \mat{A}^{-1}\W_{(2:,1)})\eta +  (\W_{(1,1)} - \W_{(2:,1)}\T  \mat{A}^{-1} \W_{(2:,1)}) > 0
+\label{PDUpdateCondQuadFormWithW}
+\end{equation}
+or according to \eqref{schurNotationPreUpdate}:
+\begin{equation}
+(\vec{u}_{(2:)}\T \mat{A}^{-1} \vec{u}_{(2:)}) \eta^2 - 2(\vec{u}_{(1)} - \vec{u}_{(2:)}\T \mat{A}^{-1}\vec{B\T})\eta -  (C - \vec{B}  \mat{A}^{-1} \vec{B}\T) < 0
+\label{PDUpdateCondQuadForm}
+\end{equation}
+Note that \eqref{PDUpdateCondQuadForm} is always true for $\eta = 0$ because $\W\succ0$. Solving \eqref{PDUpdateCondQuadForm} according to $\eta$ gives the upper bound for $\eta$.  The computational complexity of \eqref{PDUpdateCondQuadForm} is $o(d^2)$ because it is a summation of quadratic forms. \todo{reformulate according to \eqref{invWkk} and \eqref{invA_Btrans}}
+
+Summing it up, in this part we found an upper bound \eqref{PDUpdateCondQuadForm} for the step size of a coordinate (row-column) step (\eqref{gradMtx} and \eqref{updateEq}) that can maintain the metric matrix as positive definite. The complexity for the evaluation of \eqref{PDUpdateCondQuadForm} is $o(d^2)$. The next sections show how to evaluate $\W^{*-1}$ following a coordinate step \eqref{updateEq} and how to evaluate $\mat{A}^{*-1}$ before the next coordinate step both with a computaional complexity of $o(d^2)$ .
+
+\subsubsection{Evaluating $\W^{*-1}$ following a coordinate step \eqref{updateEq}}
+Here we show how to evaluate $\W^{*-1}$ following a coordinate step \eqref{updateEq}. This can be easily done using the Woodbury matrix identity \todo{addref}. By reformulating \eqref{updateEq} and \eqref{gradMtx} according to the Woodbury matrix identity notation, we can write
+\begin{equation}
+\mat{\widetilde{G}} = \mat{U}\mat{C}\mat{V} = \left[ \begin{matrix} \vec{u} & \vec{e_i} \end{matrix} \right] \left[ \begin{matrix} \eta & 0 \\ 0 & \eta \end{matrix} \right] \left[ \begin{matrix} \vec{e_i}\T \\ \vec{u}\T \end{matrix} \right]
+\label{gradMtxWDB}
+\end{equation}
+and
+\begin{equation}
+\mat{W^*} = \W+\mat{\widetilde{G}}
+\label{updateEqWDB}
+\end{equation}
+And using the Woodbury matrix identity we get that
+\begin{equation}
+\W^{*-1} = \W^{-1} - \W^{-1} \mat{U} (\eta^{-1} I_{2x2} + \mat{V} \W^{-1} \mat{U})^{-1} \mat{V} \W^{-1}
+\label{InvWwdb}
+\end{equation}
+
+
+\subsubsection{Evaluating $\mat{A}^{-1}$ before a coordinate step}
+Here we show how to evaluate $\mat{A}^{-1}$ given $\W$ and $\W^{-1}$, using the Schur complement and its corresponding notation \eqref{schurNotationPreUpdate}. According to the Schur complement: 
+\begin{equation}
+\W^{-1} =  \left[ \begin{matrix} (\mat{C}-\vec{B} \mat{A}^{-1} \vec{B}\T) & -(\mat{C}-\vec{B} \mat{A}^{-1} \vec{B}\T) \vec{B} \mat{A}^{-1} \\ -((\mat{C}-\vec{B} \mat{A}^{-1} \vec{B}\T) \vec{B} \mat{A}^{-1} )\T & (\mat{A}^{-1} + \mat{A}^{-1} \vec{B}\T (\mat{C}-\vec{B} \mat{A}^{-1} \vec{B}\T) \vec{B} \mat{A}^{-1} ) \end{matrix}  \right]
+\label{BlockInvW}
+\end{equation}
+and therefore
+\begin{equation}
+(\mat{C}-\vec{B} \mat{A}^{-1} \vec{B}\T) = \W^{-1}_{(1,1)}
+\label{invWkk}
+\end{equation}
+\begin{equation}
+-(\mat{C}-\vec{B} \mat{A}^{-1} \vec{B}\T) \vec{B} \mat{A}^{-1} = -\W^{-1}_{(1,1)} \vec{B} \mat{A}^{-1} = \W^{-1}_{(1,2:)}
+\end{equation}
+\begin{equation}
+\vec{B} \mat{A}^{-1} = -\frac{\W^{-1}_{(1,2:)}}{\W^{-1}_{(1,1)} }
+\end{equation}
+\begin{equation}
+\mat{A}^{-1}\vec{B}\T = (\vec{B} \mat{A}^{-1})\T
+\label{invA_Btrans}
+\end{equation}
+Assign above at the lower right block of \eqref{BlockInvW}, we get that
+\begin{equation}
+ \mat{A}^{-1} + \frac{1}{\W^{-1}_{(1,1)} } \W^{-1}_{(2:,1)} (\W^{-1}_{(2:,1)})\T = \W^{-1}_{(2:,2:)}
+\end{equation}
+
+Finally, we get:
+\begin{equation}
+\mat{A}^{-1} = \W^{-1}_{(2:,2:)}- \frac{\W^{-1}_{(2:,1)} \W^{-1}_{(1,2:)}}{\W^{-1}_{(1,1)}}
+\label{InvA}
+\end{equation}
+The computational complexity of \eqref{InvA} is $o(d^2)$
+
+Summing it up, we've showed in this part how to evaluate the inverse of the $\mat{A}$, in order to prepare for a computation of a new coordinate step
+
+\subsubsection{Wrapping up the coordinate step}
+\todo{Write as algorithm style}
+
+0. Init $\W$ with an identity $dxd$ matrix. It's inverse is also the identity $dxd$ matrix.
+
+1. Loop over coordinates $i \in 0:(d-1)$
+
+1.1 Evaluate $\mat{A}^{-1}$ before a coordinate step \eqref{InvA}
+
+1.2 Evaluate the coordinate gradient matrix \eqref{gradMtx}
+
+1.3 Choose the step size, with an upper bound according to \eqref{PDUpdateCondQuadForm}
+
+1.4 Update the matrix to $\newW$ according to \eqref{updateEq}
+
+1.5 Update $\newW^{-1}$ according to \eqref{InvWwdb}

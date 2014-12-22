@@ -1,0 +1,91 @@
+\section{Free Discussion}
+
+\subsection{minimization step}
+We'll make each step as a minimization step, subject to the condition for PD by the schur complement  \eqref{schurCond}
+\begin{equation}
+\begin{aligned}
+& \underset{\vec{u}}{\text{minimize}}
+& & Loss(\W) \\
+& \text{subject to}
+& & \vec{u_{2:}}\T \mat{A}^{-1} \vec{u_{2:}} - \vec{u_{1}} < 0
+\end{aligned}
+\end{equation}
+where $\vec{u}$ is the update for row-col 1 of $\W$. Using the KKT approach:
+\begin{equation}
+L_{(\vec{u}, \lambda)} = Loss(\W) + \lambda ( \vec{u_{2:}}\T \mat{A}^{-1} \vec{u_{2:}} - \vec{u_{1}} + \epsilon)
+\end{equation}
+where $\epsilon > 0 $ is required to fulfill the requirement for PD (yet not PSD), then:
+\begin{equation}
+\nabla_{\vec{u_{2:}}} L = \frac{\partial {Loss(\W)}}{\partial \vec{u_{2:}}}  + \lambda ( 2 \mat{A}^{-1} \vec{u_{2:}}) = 0
+\label{gradu2_minstep}
+\end{equation}
+\begin{equation}
+\frac{\partial {L}}{\partial \vec{u_1}} = \frac{\partial {Loss(\W)}}{\partial \vec{u_1}} - \lambda = 0
+\label{gradu1_minstep}
+\end{equation}
+\begin{equation}
+\frac{\partial {L}}{\partial \lambda} = \vec{u_{2:}}\T \mat{A}^{-1} \vec{u_{2:}} - \vec{u_{1}} + \epsilon = 0
+\label{gradLd_minstep}
+\end{equation}
+Solving for above \eqref{gradu2_minstep}, \eqref{gradu1_minstep}, \eqref{gradLd_minstep} and noting $\vec{h}$ as $\vec{h} \eqdef \frac{\partial {Loss(\W)}}{\partial \vec{u_{2:}}}$ we find that
+\begin{equation}
+\lambda = \frac{\partial {Loss(\W)}}{\partial \vec{u_1}} 
+\label{ld_minstep}
+\end{equation}
+\begin{equation}
+\vec{u_{2:}} = -\frac{1}{2 \lambda}\mat{A} \vec{h}
+\label{u2_minstep}
+\end{equation}
+\begin{equation}
+\vec{u_{1}} = \vec{u_{2:}}\T \mat{A}^{-1} \vec{u_{2:}} + \epsilon = \frac{1}{4 \lambda^2}(\mat{A} \vec{h})\T \mat{A}^{-1} \mat{A} \vec{h} + \epsilon = \frac{1}{4 \lambda^2} \vec{h}\T \mat{A}\T \vec{h} + \epsilon
+\label{u1_minstep}
+\end{equation}
+if \eqref{ld_minstep} is negative, then we choose $\lambda = 0$ and choose $\vec{u} = \W_{1,1:d}$. i.e. we skip the update for this row-column. another alternative is to make a gradient step.
+
+\subsection{optimal projection (not solved)}
+Trying to find the optimal projection for the update $\vec{u}$ on the PSD cone. 
+We can use the condition of \eqref{PDUpdateCondQuadForm}, with $\eta = 1$ and any $\vec{u}$ that maintains that condition:
+\begin{equation}
+(\vec{u}_{(2:)}\T \mat{A}^{-1} \vec{u}_{(2:)}) - 2(\vec{u}_{(1)} - \vec{u}_{(2:)}\T \mat{A}^{-1}\vec{B\T}) -   (C - \vec{B}  \mat{A}^{-1} \vec{B}\T) < 0
+\label{PDUpdateCondQuadFormWithU}
+\end{equation}
+setting
+\begin{equation}
+\mat{H} \eqdef \left[ \begin{matrix} 0 &  . . & 0 \\ : &  \mat{A}^{-1}  \\ 0 & \end{matrix} \right]
+\end{equation}
+\begin{equation}
+\vec{v} \eqdef -2\left[ \begin{matrix} 1 \\ \mat{A}^{-1}\vec{B\T}  \end{matrix} \right]
+\end{equation}
+\begin{equation}
+s \eqdef (C - \vec{B}  \mat{A}^{-1} \vec{B}\T)
+\end{equation}
+We'll find the euclidean projection using the KKT approach:
+
+\begin{equation}
+\begin{aligned}
+& \underset{u}{\text{minimize}}
+& & ||\vec{u} - \vec{u_0}||^2 \\
+& \text{subject to}
+& & \vec{u}\T \mat{H} \vec{u} + \vec{v}\vec{u}+s \leq 0
+\end{aligned}
+\end{equation}
+where $\vec{u_0}$ is the gradient step to take with no PD constraint. 
+
+Using the KKT approach:
+\begin{equation}
+L_{(\vec{u}^*, \lambda^*)} = ||\vec{u} - \vec{u_0}||^2 + \lambda ( \vec{u}\T \mat{H} \vec{u} + \vec{u}\T\vec{v}+s )
+\end{equation}
+then: 
+\begin{equation}
+\nabla_{\vec{u}} L = 2(\vec{u} - \vec{u_0}) + \lambda(2\mat{H}\vec{u} + \vec{v}) = 0
+\end{equation}
+and
+\begin{equation}
+\frac{\partial {L}}{\partial \lambda} =   \vec{u}\T \mat{H} \vec{u} + \vec{v}\vec{u}+s = 0
+\end{equation}
+From here i am unsure on how to proceed..
+it seems like $\nabla_{\vec{u}} L = 0 $ and $\frac{\partial {L}}{\partial \lambda}$ = 0 leads me to something that can't be solved analytically...
+Any idea?
+
+
+

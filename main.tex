@@ -1,0 +1,88 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+
+\usepackage{amsfonts}
+\usepackage{mathtools}
+
+%%%% Page Setup %%%
+\usepackage[margin=0.7in]{geometry}
+
+%%%%%%%%%%%%%%%%%%%
+%%%% Environment configuration %%%%%%%
+%\mathtoolsset{showonlyrefs}  % This cfg numbers only equations with reference.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%% my commands%%%%
+\newcommand\todo[1]{\textbf{<ToDo:#1}>}
+\newcommand\mat[1]{\mathcal{#1}}
+\renewcommand\vec[1]{\mathbf{#1}}
+\newcommand{\T}{{}^\mathsf{T}}
+\newcommand{\W}{\mat{W}}
+\newcommand{\newW}{{\mat{W^*}}}
+\newcommand{\eqdef}{\doteq}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{Coordinate Descent Similarity Learning}
+\author{Yuval Atzmon}
+\date{August 2014}
+
+\begin{document}
+
+\maketitle
+
+\section{Formulation}
+Organizing the dataset as triplets as in OASIS. We’ll note the set of all triplets as $T$ 
+For a triplet $t$ we’ll note $q_t$,$p_t^+$,$p_t^-$  as the sample, a positive (similar) example and a negative example respectively. Following OASIS, we can define the similarity requirement as
+\begin{equation}
+q_t^T Wp_t^+>1+q_t^T Wp_t^-
+\end{equation}
+where $W$ is the similarity matrix
+\section{Defining the loss }
+Next, we’ll formulate the similarity learning optimization problem, with two alternative loss functions
+\subsection{hinge loss} 
+Using the hinge loss, we define the loss for a specific triplet as
+\begin{equation}
+l_t (W)=max(0,1-q_t^T Wp_t^++q_t^T Wp_t^-)=max(0,1+tr(W(p_t^--p_t^+)q_t^T))
+\end{equation}
+	
+\subsection{Logarithmic loss} 
+As a differentiable alternative to the hinge loss, we’ll use a logarithmic loss function  $log(1+e^x)$ (where $log()$ is the natural logarithm). Hence the loss for a specific triplet $t$ is defined as 
+\begin{equation}
+l_t (W)=log(1+exp(1-q_t^T Wp_t^++q_t^T Wp_t^-))=log(1+exp(1+tr(W(p_t^--p_t^+)q_t^T)))
+\end{equation}
+\subsection{Linear loss notation} 
+We’ll define a notation for  a linear loss as 
+
+\subsection{The dataset loss} 
+The loss of the dataset is
+\begin{equation}
+L(W)=\sum\limits_{t\in T}{l_t (W)}
+\end{equation}
+Our optimization target is to find $W$ that minimizes $L(W)$, subject to $W\succeq 0$. Hence,
+\begin{equation}
+\begin{aligned}
+& W=\argmin\limits_{W}{\sum\limits_{t\in T}{l_t (W)}}  \\ & \text{subject to: } W\succeq 0
+\end{aligned}
+\end{equation}
+\section{A gradient step} 
+Evaluating a gradient step  $\frac{\partial {l_t (W)}}{\partial W}$ of an arbitrary triplet $t$
+\subsubsection{Gradient step with hinge loss} 
+The hinge loss is not differentiable, but it has a sub gradient that is given by
+\begin{equation}
+TBD
+ %$\frac{\partial {l_t (W)}}{\partial W}$ = 
+\end{equation}
+
+TBD
+
+%COMMENT
+\input{row_col_update}
+
+\input{free_discussion}
+
+\end{document}
+
+
